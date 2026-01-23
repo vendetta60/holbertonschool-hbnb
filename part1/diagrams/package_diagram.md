@@ -1,50 +1,29 @@
 ## High-Level Package Diagram
 
+This diagram illustrates the three-layer architecture of the HBnB Evolution application and shows the communication between layers using the **Facade Pattern**.
+
 ```mermaid
 classDiagram
-direction TB
-
-package "Presentation Layer" {
-    class API {
-        +registerUser()
-        +updateUser()
-        +createPlace()
-        +createReview()
-        +listPlaces()
-    }
+class PresentationLayer {
+    +ServiceAPI
+}
+class BusinessLogicLayer {
+    +ModelClasses (User, Place, Review, Amenity)
+}
+class PersistenceLayer {
+    +DatabaseAccess
 }
 
-package "Business Logic Layer" {
-    class HBnBFacade {
-        +createUser()
-        +updateUser()
-        +deleteUser()
-        +createPlace()
-        +updatePlace()
-        +deletePlace()
-        +createReview()
-        +getPlaces()
-    }
+PresentationLayer --> BusinessLogicLayer : Facade Pattern
+BusinessLogicLayer --> PersistenceLayer : Database Operations
 
-    class User
-    class Place
-    class Review
-    class Amenity
-}
 
-package "Persistence Layer" {
-    class Repository {
-        +save()
-        +update()
-        +delete()
-        +findById()
-        +findAll()
-    }
-}
+Layer Descriptions
 
-API --> HBnBFacade : Facade Pattern
-HBnBFacade --> User
-HBnBFacade --> Place
-HBnBFacade --> Review
-HBnBFacade --> Amenity
-HBnBFacade --> Repository : CRUD Operations
+Presentation Layer: Handles all user-facing services and APIs.
+
+Business Logic Layer: Implements core entities and business rules.
+
+Persistence Layer: Responsible for storing and retrieving data from the database.
+
+Facade Pattern: Provides a single interface for the Presentation Layer to communicate with the Business Logic Layer.
