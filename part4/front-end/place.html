@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBnB - Place Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="icon.png" type="image/png">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <img src="logo.png" alt="HBnB Logo" class="logo">
+            <a href="login.html" class="login-button">Login</a>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="place-details">
+            <div class="place-info">
+                <h2 id="place-title">Loading...</h2>
+                <img id="place-image" src="place1.jpg" alt="Loading...">
+                
+                <div class="place-meta">
+                    <div id="place-host">
+                        <strong>Host:</strong> <span id="host-name">Loading...</span>
+                    </div>
+                    <div class="place-price">
+                        <strong>Price:</strong> <span id="place-price">Loading...</span>
+                    </div>
+                    <div id="place-location" class="location-box">
+                        <strong>Location:</strong> <span id="location-text">Loading...</span>
+                    </div>
+                    <div>
+                        <strong>Max Guests:</strong> <span id="max-guests">Loading...</span>
+                    </div>
+                </div>
+                
+                <div class="description">
+                    <h3>Description</h3>
+                    <p id="place-description">Loading...</p>
+                </div>
+                
+                <div class="amenities">
+                    <h3>Amenities</h3>
+                    <ul>
+                        <li>
+                            <img src="icon_wifi.png" alt="WiFi" style="width: 20px; height: 20px;" class="amenity-icon">
+                            WiFi
+                        </li>
+                        <li>
+                            <img src="icon_bed.png" alt="Bed" style="width: 20px; height: 20px;" class="amenity-icon">
+                            Bed
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <section id="reviews">
+            <h2>Reviews</h2>
+            <div class="text-center mt-2">
+                <a href="add_review.html" class="details-button">Add Review</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 HBnB. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+async function loadPlaceDetailsFromAPI() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const placeId = urlParams.get('id');
+    
+    if (!placeId) {
+        document.getElementById('place-title').textContent = 'No place ID provided';
+        return;
+    }
+    
+    try {
+        console.log(`Attempting to fetch place with ID: ${placeId}`);
+        const apiUrl = `http://localhost:8000/api/v1/places/${placeId}`;
+        console.log(`API URL: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors'
+        });
+        
+        console.log(`API Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+        
+        const place = await response.json();
+        console.log('Place data loaded successfully:', place);
+        
+        document.getElementById('place-title').textContent = place.title || 'Unknown Title';
+        
+        const titleLower = (place.title || '').toLowerCase();
+        let imageSrc = 'place1.jpg';
+        
+        if (titleLower.includes('downtown') || titleLower.includes('cozy')) {
+            imageSrc = 'place1.jpg';
+        } else if (titleLower.includes('studio') || titleLower.includes('modern')) {
+            imageSrc = 'place2.jpg';
+        } else if (titleLower.includes('villa') || titleLower.includes('luxury')) {
+            imageSrc = 'place3.jpg';
+        } else if (titleLower.includes('beach')) {
+            imageSrc = 'place4.jpg';
+        } else if (titleLower.includes('mountain') || titleLower.includes('cabin')) {
+            imageSrc = 'place5.jpg';
+        } else if (titleLower.includes('loft') || titleLower.includes('urban')) {
+            imageSrc = 'place6.jpg';
+        }
+        
+        document.getElementById('place-image').src = imageSrc;
+        document.getElementById('place-image').alt = place.title || 'Place image';
+        
+        let hostName = 'Unknown';
+        if (place.owner && (place.owner.first_name || place.owner.last_name)) {
+            hostName = `${place.owner.first_name || ''} ${place.owner.last_name || ''}`.trim();
+        } else if (place.host) {
+            hostName = place.host;
+        }
+        document.getElementById('host-name').textContent = hostName;
+        
+        document.getElementById('place-price').textContent = `$${place.price || 0}/night`;
+        document.getElementById('location-text').textContent = `Lat: ${place.latitude || 'N/A'}, Lng: ${place.longitude || 'N/A'}`;
+        document.getElementById('max-guests').textContent = place.max_guests || 'N/A';
+        document.getElementById('place-description').textContent = place.description || 'No description available';
+        
+        loadReviews(placeId);
+        
+    } catch (error) {
+        console.error('Error fetching place details:', error);
+        document.getElementById('place-title').textContent = 'Error loading place';
+        document.getElementById('host-name').textContent = 'Connection error';
+        document.getElementById('place-price').textContent = 'Check console for details';
+        document.getElementById('location-text').textContent = error.message;
+        document.getElementById('max-guests').textContent = 'N/A';
+        document.getElementById('place-description').textContent = `Unable to load place details: ${error.message}. Please check your API connection and database.`;
+        
+        console.log('Network troubleshooting:');
+        console.log('1. Make sure your database server is running');
+        console.log('2. Check that your API endpoint is correct');
+        console.log('3. Verify CORS is properly configured on the server');
+        console.log('4. Check for firewall or network connectivity issues');
+    }
+}
+
+
+window.addEventListener('DOMContentLoaded', loadPlaceDetailsFromAPI);
+</script>
+</body>
+</html>
